@@ -1,0 +1,67 @@
+name: Deploy Node.js to ECR and EC2
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and tag Docker image
+        id: build-image
+        run: |
+          docker build -t ${{ secrets.AWS_ECR_REGISTRY }}/blog:${{ github.sha }} .
+          echo "image=${{ secrets.AWS_ECR_REGISTRY }}/blog:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Push Docker image to Amazon ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.AWS_ECR_REGISTRY }}/blog:${{ github.sha }}
+          build-args: |
+            NODE_ENV=production
+
+      - name: Tag latest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag ${{ secrets.AWS_ECR_REGISTRY }}/blog:${{ github.sha }} ${{ secrets.AWS_ECR_REGISTRY }}/blog:latest
+          docker push ${{ secrets.AWS_ECR_REGISTRY }}/blog:latest
+
+  deploy_to_ec2:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    needs: build_and_push
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::626635440935:role/ssm-role
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Deploy to EC2 with SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --document-name AWS-RunShellScript \
+            --parameters commands="docker pull ${{ secrets.AWS_ECR_REGISTRY }}/blog:latest, docker stop blog-container || true, docker rm blog-container || true, docker run --network host -d -p 8005:8005 --name blog-container ${{ secrets.AWS_ECR_REGISTRY }}/blog:latest" \
+            --region ${{ secrets.AWS_REGION }}

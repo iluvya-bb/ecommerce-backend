@@ -1,0 +1,522 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Course Backend API",
+    "version": "1.0.0",
+    "description": "API for managing courses, lessons, exercises, and users."
+  },
+  "host": "localhost:3000",
+  "basePath": "/api/v1",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/courses": {
+      "get": {
+        "summary": "Get all courses",
+        "tags": ["Courses"],
+        "responses": {
+          "200": {
+            "description": "A list of courses"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new course",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Course created"
+          }
+        }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "summary": "Get a course by ID",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single course"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a course",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a course",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course deleted"
+          }
+        }
+      }
+    },
+    "/courses/{id}/subscriptions": {
+      "get": {
+        "summary": "Get all subscriptions for a course",
+        "tags": ["Courses"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of subscriptions"
+          }
+        }
+      }
+    },
+    "/lessons": {
+      "get": {
+        "summary": "Get all lessons",
+        "tags": ["Lessons"],
+        "responses": {
+          "200": {
+            "description": "A list of lessons"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new lesson",
+        "tags": ["Lessons"],
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "video",
+            "in": "formData",
+            "type": "file",
+            "description": "The video file to upload."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Lesson created"
+          }
+        }
+      }
+    },
+    "/lessons/{id}": {
+      "get": {
+        "summary": "Get a lesson by ID",
+        "tags": ["Lessons"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single lesson"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a lesson",
+        "tags": ["Lessons"],
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "video",
+            "in": "formData",
+            "type": "file",
+            "description": "The video file to upload."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a lesson",
+        "tags": ["Lessons"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson deleted"
+          }
+        }
+      }
+    },
+    "/lessons/{id}/stream": {
+      "get": {
+        "summary": "Stream a lesson video",
+        "tags": ["Lessons"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "206": {
+            "description": "Partial content of the video"
+          }
+        }
+      }
+    },
+    "/exercises": {
+      "get": {
+        "summary": "Get all exercises",
+        "tags": ["Exercises"],
+        "responses": {
+          "200": {
+            "description": "A list of exercises"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new exercise",
+        "tags": ["Exercises"],
+        "responses": {
+          "201": {
+            "description": "Exercise created"
+          }
+        }
+      }
+    },
+    "/exercises/{id}": {
+      "get": {
+        "summary": "Get an exercise by ID",
+        "tags": ["Exercises"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single exercise"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an exercise",
+        "tags": ["Exercises"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exercise updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an exercise",
+        "tags": ["Exercises"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exercise deleted"
+          }
+        }
+      }
+    },
+    "/subscriptions": {
+      "get": {
+        "summary": "Get all subscriptions",
+        "tags": ["Subscriptions"],
+        "responses": {
+          "200": {
+            "description": "A list of subscriptions"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new subscription",
+        "tags": ["Subscriptions"],
+        "responses": {
+          "201": {
+            "description": "Subscription created"
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User registered"
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "summary": "Login a user",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User logged in"
+          }
+        }
+      }
+    },
+    "/users/signout": {
+      "get": {
+        "summary": "Signout a user",
+        "tags": ["Users"],
+        "responses": {
+          "200": {
+            "description": "User signed out"
+          }
+        }
+      }
+    },
+    "/users/subscribe": {
+      "post": {
+        "summary": "Subscribe a user to a course",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string"
+                },
+                "courseId": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User subscribed"
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "summary": "Get statistics",
+        "tags": ["Stats"],
+        "responses": {
+          "200": {
+            "description": "A list of statistics"
+          }
+        }
+      }
+    },
+    "/parameters": {
+      "get": {
+        "summary": "Get all parameters",
+        "tags": ["Parameters"],
+        "responses": {
+          "200": {
+            "description": "A list of parameters"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new parameter",
+        "tags": ["Parameters"],
+        "responses": {
+          "201": {
+            "description": "Parameter created"
+          }
+        }
+      }
+    },
+    "/parameters/{key}": {
+      "get": {
+        "summary": "Get a parameter by key",
+        "tags": ["Parameters"],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single parameter"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a parameter",
+        "tags": ["Parameters"],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parameter updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a parameter",
+        "tags": ["Parameters"],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parameter deleted"
+          }
+        }
+      }
+    }
+  }
+}
