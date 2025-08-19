@@ -77,6 +77,62 @@ export const login = asyncHandler(async (req, res, next) => {
 	}
 });
 
+export const adminLogin = asyncHandler(async (req, res, next) => {
+	const { email, password } = req.body;
+	const { User, Session } = req.db.ecommerce.models;
+	const { deviceType = "desktop" } = req.body; // Default to desktop
+
+	if (!email || !password) {
+		return next(new ErrorResponse("Please provide an email and password", 400));
+	}
+
+	const user = await User.findOne({ where: { email } });
+
+	if (!user) {
+		return next(new ErrorResponse("User not found", 404));
+	}
+
+	if (user.role !== "admin") {
+		return next(new ErrorResponse("User is not authorized", 403));
+	}
+
+	const isMatch = await user.matchPassword(password);
+
+	if (!isMatch) {
+		return next(new ErrorResponse("Incorrect password", 401));
+	}
+
+	try {
+		const deviceId = uuidv4();
+		const token = jwt.sign(
+			{ id: user.id, deviceId, deviceType },
+			process.env.JWT_SECRET,
+			{
+				expiresIn: Number(process.env.JWT_EXPIRE),
+			},
+		);
+
+		// Invalidate other sessions for this user on other devices if needed, or manage sessions
+		// For simplicity, we'll just create a new one.
+		await Session.create({
+			userId: user.id,
+			deviceId,
+			deviceType,
+			sessionToken: token,
+		});
+
+		res.cookie("token", token, {
+			maxAge: process.env.JWT_EXPIRE,
+			httpOnly: true,
+		});
+
+		res.status(200).json({ success: true, token });
+	} catch (err) {
+		console.error(err);
+		return next(new ErrorResponse("Server error during login", 500));
+	}
+});
+
 export const updateProfile = asyncHandler(async (req, res, next) => {
 	const { User } = req.db.ecommerce.models;
 	const user = await User.findByPk(req.user.id, {

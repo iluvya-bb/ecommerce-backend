@@ -12,6 +12,12 @@ export const getCategories = asyncHandler(async (req, res, next) => {
 	res.status(200).json({ success: true, data: categories });
 });
 
+export const getAllCategoriesAdmin = asyncHandler(async (req, res, next) => {
+	const { Category } = req.db.ecommerce.models;
+	const categories = await Category.findAll({ include: ["images"] });
+	res.status(200).json({ success: true, data: categories });
+});
+
 export const getCategory = asyncHandler(async (req, res, next) => {
 	const { Category } = req.db.ecommerce.models;
 	const category = await Category.findByPk(req.params.id, {

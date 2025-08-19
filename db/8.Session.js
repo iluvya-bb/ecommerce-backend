@@ -14,7 +14,7 @@ export default (sequelize, DataTypes) => {
       userId: DataTypes.INTEGER,
       deviceId: DataTypes.UUID,
       deviceType: DataTypes.STRING,
-      sessionToken: DataTypes.STRING,
+      sessionToken: DataTypes.TEXT,
       trusted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

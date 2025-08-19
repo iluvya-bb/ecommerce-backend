@@ -3,6 +3,7 @@ import {
   subscribeUserToCourse,
   register,
   login,
+  adminLogin,
   signout,
   updateProfile,
   getUsers,
@@ -27,6 +28,7 @@ router
 
 router.route("/register").post(register);
 router.route("/login").post(login);
+router.route("/admin/login").post(adminLogin);
 router.route("/signout").get(protect, signout);
 router.route("/profile").put(protect, upload.single("avatar"), updateProfile);
 router

@@ -69,15 +69,45 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const getAllOrdersAdmin = asyncHandler(async (req, res, next) => {
 	const { Order } = req.db.ecommerce.models;
-	const orders = await Order.findAll({ include: ["user", "contact"] });
-	res.status(200).json({ success: true, data: orders });
+	const {
+		status,
+		sortBy = "createdAt",
+		sortOrder = "DESC",
+		page = 1,
+		limit = 10,
+	} = req.query;
+
+	let where = {};
+	if (status) {
+		where.status = status;
+	}
+
+	const offset = (page - 1) * limit;
+
+	const { count, rows } = await Order.findAndCountAll({
+		where,
+		include: ["user", "contact", "paymentRequest"],
+		order: [[sortBy, sortOrder]],
+		limit: parseInt(limit),
+		offset: parseInt(offset),
+	});
+
+	res.status(200).json({
+		success: true,
+		data: rows,
+		pagination: {
+			total: count,
+			pages: Math.ceil(count / limit),
+			currentPage: parseInt(page),
+		},
+	});
 });
 
 // @desc    Update order status (Admin)
 // @route   PUT /api/v1/orders/:id/status
 // @access  Private (Admin)
 export const updateOrderStatusAdmin = asyncHandler(async (req, res, next) => {
-	const { Order, PaymentRequest } = req.db.ecommerce.models;
+	const { Order } = req.db.ecommerce.models;
 	const { status } = req.body;
 
 	const allowedStatuses = ["Awaiting Payment", "Processing", "Shipped", "Done"];
@@ -85,35 +115,27 @@ export const updateOrderStatusAdmin = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse(`Invalid status: ${status}`, 400));
 	}
 
-	let order = await Order.findByPk(req.params.id, { include: ["paymentRequest"] });
+	const order = await Order.findByPk(req.params.id, { include: ["paymentRequest"] });
 	if (!order) {
 		return next(
 			new ErrorResponse(`Order not found with id of ${req.params.id}`, 404),
 		);
 	}
 
-	// Update the order status
+	// --- Corrected Logic ---
+	// If the new status is anything other than "Awaiting Payment" and the payment
+	// has not already been marked as "Paid", we update the payment status.
+	if (status !== "Awaiting Payment" && order.paymentRequest && order.paymentRequest.status !== "Paid") {
+		const paymentRequest = await order.getPaymentRequest();
+		paymentRequest.status = "Paid";
+		paymentRequest.paymentType = "admin_confirmed";
+		paymentRequest.paidDate = new Date();
+		await paymentRequest.save();
+	}
+
+	// Finally, update the order status itself.
 	order.status = status;
 	await order.save();
-
-	// Update the payment request if the order is moving out of "Awaiting Payment"
-	if (status !== "Awaiting Payment" && order.paymentRequest.status !== "Paid") {
-		const paymentRequest = await order.getPaymentRequest();
-		paymentRequest.status = "Paid";
-		paymentRequest.paymentType = "admin";
-		paymentRequest.paidDate = new Date();
-		await paymentRequest.save();
-	}
-
-	// If the admin specifically sets the status to "Processing" from "Awaiting Payment"
-	if (status === "Processing" && order.paymentRequest.status === "Pending") {
-		const paymentRequest = await order.getPaymentRequest();
-		paymentRequest.status = "Paid";
-		paymentRequest.paymentType = "admin"; // Or another type if you have a specific flow
-		paymentRequest.paidDate = new Date();
-		await paymentRequest.save();
-	}
-
 
 	res.status(200).json({ success: true, data: order });
 });
@@ -122,9 +144,18 @@ export const updateOrderStatusAdmin = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/orders/admin/:id
 // @access  Private (Admin)
 export const getOrderAdmin = asyncHandler(async (req, res, next) => {
-	const { Order } = req.db.ecommerce.models;
+	const { Order, Product } = req.db.ecommerce.models; // Make sure to get Product model
 	const order = await Order.findByPk(req.params.id, {
-		include: ["user", "contact", "products", "paymentRequest"],
+		include: [
+			"user",
+			"contact",
+			{
+				model: Product,
+				as: "products",
+				include: ["images"], // Include the images associated with the product
+			},
+			"paymentRequest",
+		],
 	});
 	if (!order) {
 		return next(

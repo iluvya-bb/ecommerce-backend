@@ -8,6 +8,7 @@ import uploadRoutes from "./uploads.js";
 import editorUploadRoutes from "./editorUploads.js";
 import checkoutRoutes from "./checkout.js";
 import settingRoutes from "./setting.js";
+import statsRoutes from "./stats.js";
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/uploads", uploadRoutes);
 router.use("/editor-uploads", editorUploadRoutes);
 router.use("/checkout", checkoutRoutes);
 router.use("/settings", settingRoutes);
+router.use("/stats", statsRoutes);
 
 export default router;

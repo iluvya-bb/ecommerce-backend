@@ -40,7 +40,7 @@ import errorHandler from "./middlewares/error.js";
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: true }));
 	app.use(tokenParsing);
-	app.use(extendToken);
+	// app.use(extendToken); // This is causing issues
 	// parse application/json
 	app.use(route);
 	// parse error messages
