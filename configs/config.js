@@ -2,6 +2,9 @@ import fs from "fs";
 import yaml from "js-yaml";
 import { program } from "commander";
 import process from "node:process";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 program
 	.version("1.0.0")
@@ -11,7 +14,7 @@ program
 program.parse(process.argv);
 
 const options = program.opts();
-const configPath = options.config || "./default-config.yml"; // Fallback path
+const configPath = options.config || "./config.yaml"; // Fallback path
 
 if (!fs.existsSync(configPath)) {
 	console.error(`❌ Config file not found: ${configPath}`);
@@ -24,6 +27,11 @@ let cachedConfig = null;
 export function loadConfig() {
 	if (!cachedConfig) {
 		cachedConfig = yaml.load(fs.readFileSync(configPath, "utf8"));
+		if (process.env.CORS_ORIGINS) {
+			cachedConfig.cors = {
+				origins: process.env.CORS_ORIGINS.split(","),
+			};
+		}
 	}
 	return cachedConfig;
 }

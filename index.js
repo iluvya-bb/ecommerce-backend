@@ -23,7 +23,7 @@ import errorHandler from "./middlewares/error.js";
 
 	const db = await DB();
 
-	const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
+	const allowedOrigins = conf.cors?.origins || [];
 	app.use(cors({
 		origin: function (origin, callback) {
 			if (!origin || allowedOrigins.indexOf(origin) !== -1) {
