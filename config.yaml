@@ -1,0 +1,23 @@
+# config.yaml
+app:
+  name: ecommerce
+  port: 8002
+  env: "development"
+  dbOrder:
+    - Proposal
+
+
+database:
+
+tenant:
+  - name: "ecommerce"
+    host: "localhost"
+    port: 5432
+    user: "uuganaa"
+    password: "password"
+    dialect: "postgres"
+
+cors:
+  origins:
+    - "http://localhost:5173"
+    - "http://localhost:5174"
