@@ -13,7 +13,11 @@ export const getSettings = asyncHandler(async (req, res, next) => {
 
 export const updateSettings = asyncHandler(async (req, res, next) => {
   const { Setting } = req.db.ecommerce.models;
-  const { logo } = req.body;
+  const settings = req.body;
+
+  for (const key in settings) {
+    await Setting.upsert({ key, value: settings[key] });
+  }
 
   if (req.file) {
     await Setting.upsert({ key: 'logo', value: req.file.path });
