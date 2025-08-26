@@ -1,5 +1,6 @@
 import asyncHandler from "../middlewares/async.js";
 import ErrorResponse from "../utils/errorResponse.js";
+import { generatePaymentCode } from "../utils/codeGenerator.js";
 
 export const checkout = asyncHandler(async (req, res, next) => {
 	const { Order, Product, OrderContact, PaymentRequest } = req.db.ecommerce.models;
@@ -8,8 +9,8 @@ export const checkout = asyncHandler(async (req, res, next) => {
 	if (!items || items.length === 0) {
 		return next(new ErrorResponse("Please provide items to order", 400));
 	}
-	if (!contact || !contact.name || !contact.address || !contact.phone) {
-		return next(new ErrorResponse("Please provide contact information", 400));
+	if (!contact || !contact.name || !contact.address || !contact.phone || !contact.email) {
+		return next(new ErrorResponse("Please provide complete contact information including email", 400));
 	}
 
 	// Create the contact record
@@ -45,9 +46,13 @@ export const checkout = asyncHandler(async (req, res, next) => {
 		});
 	}
 
+	// Generate a unique payment code
+	const paymentCode = await generatePaymentCode(req.db);
+
 	await PaymentRequest.create({
 		orderId: order.id,
 		amount: order.total,
+		code: paymentCode,
 	});
 
 	res.status(201).json({ success: true, data: order });

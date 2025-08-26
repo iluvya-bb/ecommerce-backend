@@ -36,6 +36,10 @@ export default (sequelize) => {
 				type: DataTypes.DATE,
 				allowNull: true,
 			},
+			code: {
+				type: DataTypes.STRING,
+				unique: true,
+			},
 		},
 		{
 			sequelize,

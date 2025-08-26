@@ -1,5 +1,6 @@
 import asyncHandler from "../middlewares/async.js";
 import ErrorResponse from "../utils/errorResponse.js";
+import { generatePaymentCode } from "../utils/codeGenerator.js";
 
 export const getOrders = asyncHandler(async (req, res, next) => {
 	const { Order } = req.db.ecommerce.models;
@@ -22,11 +23,11 @@ export const getOrder = asyncHandler(async (req, res, next) => {
 });
 
 export const createOrder = asyncHandler(async (req, res, next) => {
-	const { Order, Product, OrderContact } = req.db.ecommerce.models;
+	const { Order, Product, OrderContact, PaymentRequest } = req.db.ecommerce.models;
 	const { items, contact } = req.body;
 
-	if (!contact || !contact.name || !contact.address || !contact.phone) {
-		return next(new ErrorResponse("Please provide contact information", 400));
+	if (!contact || !contact.name || !contact.address || !contact.phone || !contact.email) {
+		return next(new ErrorResponse("Please provide complete contact information including email", 400));
 	}
 
 	// Create the contact record
@@ -49,10 +50,14 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 		vat,
 	});
 
+	// Generate a unique payment code
+	const paymentCode = await generatePaymentCode(req.db);
+
 	// Create a corresponding payment request
-	await req.db.ecommerce.models.PaymentRequest.create({
+	await PaymentRequest.create({
 		orderId: order.id,
 		amount: order.total,
+		code: paymentCode,
 	});
 
 	for (const item of items) {

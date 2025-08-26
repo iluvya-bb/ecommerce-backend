@@ -6,7 +6,7 @@ import path from "path";
 
 export const getProducts = asyncHandler(async (req, res, next) => {
 	const { Product, Category } = req.db.ecommerce.models;
-	const { categoryId, q, maxPrice } = req.query;
+	const { categoryId, q, minPrice, maxPrice, orderBy, order } = req.query;
 
 	let options = {
 		include: [
@@ -18,6 +18,7 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 			"images",
 		],
 		where: {},
+		order: [["name", "ASC"]],
 	};
 
 	if (categoryId) {
@@ -30,10 +31,28 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 		};
 	}
 
+	if (minPrice) {
+		options.where.price = {
+			...options.where.price,
+			[Op.gte]: minPrice,
+		};
+	}
+
 	if (maxPrice) {
 		options.where.price = {
+			...options.where.price,
 			[Op.lte]: maxPrice,
 		};
+	}
+
+	if (orderBy && order) {
+		const allowedOrderFields = ["name", "price", "stock"];
+		const isOrderAllowed = allowedOrderFields.includes(orderBy);
+		const isDirectionAllowed = ["ASC", "DESC"].includes(order.toUpperCase());
+
+		if (isOrderAllowed && isDirectionAllowed) {
+			options.order = [[orderBy, order.toUpperCase()]];
+		}
 	}
 
 	const products = await Product.findAll(options);

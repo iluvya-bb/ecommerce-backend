@@ -14,6 +14,13 @@ export default (sequelize, DataTypes) => {
 			name: DataTypes.STRING,
 			address: DataTypes.STRING,
 			phone: DataTypes.STRING,
+			email: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				validate: {
+					isEmail: true,
+				},
+			},
 			createdBy: {
 				type: DataTypes.INTEGER,
 				allowNull: true, // Can be null for guest orders
