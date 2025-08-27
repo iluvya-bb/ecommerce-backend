@@ -13,11 +13,15 @@ export const checkout = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse("Please provide complete contact information including email", 400));
 	}
 
-	// Create the contact record
-	const orderContact = await OrderContact.create({
+	// Prepare contact data, prioritizing authenticated user's email
+	const contactData = {
 		...contact,
+		email: req.user ? req.user.email : contact.email,
 		createdBy: req.user ? req.user.id : null,
-	});
+	};
+
+	// Create the contact record
+	const orderContact = await OrderContact.create(contactData);
 
 	// Calculate total and validate products
 	let total = 0;
