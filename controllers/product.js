@@ -6,7 +6,7 @@ import path from "path";
 
 export const getProducts = asyncHandler(async (req, res, next) => {
 	const { Product, Category } = req.db.ecommerce.models;
-	const { categoryId, q, minPrice, maxPrice, orderBy, order } = req.query;
+	const { categoryId, q, minPrice, maxPrice, orderBy, order, page, limit } = req.query;
 
 	let options = {
 		include: [
@@ -19,6 +19,7 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 		],
 		where: {},
 		order: [["name", "ASC"]],
+		distinct: true,
 	};
 
 	if (categoryId) {
@@ -55,6 +56,28 @@ export const getProducts = asyncHandler(async (req, res, next) => {
 		}
 	}
 
+	// Only apply pagination if limit is provided
+	if (limit) {
+		const pageNum = parseInt(page || "1", 10);
+		const limitNum = parseInt(limit, 10);
+		const offset = (pageNum - 1) * limitNum;
+
+		options.limit = limitNum;
+		options.offset = offset;
+
+		const { count, rows: products } = await Product.findAndCountAll(options);
+		const totalPages = Math.ceil(count / limitNum);
+		const pagination = {
+			total: count,
+			pages: totalPages,
+			page: pageNum,
+			limit: limitNum,
+		};
+
+		return res.status(200).json({ success: true, data: products, pagination });
+	}
+
+	// If no limit, return all products
 	const products = await Product.findAll(options);
 	res.status(200).json({ success: true, data: products });
 });
