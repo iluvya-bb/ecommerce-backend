@@ -5,6 +5,6 @@ import upload from "../configs/uploads.js";
 
 const router = express.Router();
 
-router.route("/").get(getSettings).put(protect, authorize("admin"), upload.single("logo"), updateSettings);
+router.route("/").get(getSettings).put(protect, authorize("admin"), upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'heroImage', maxCount: 1 }, { name: 'heroBackgroundImage', maxCount: 1 }]), updateSettings);
 
 export default router;

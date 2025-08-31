@@ -16,11 +16,21 @@ export const updateSettings = asyncHandler(async (req, res, next) => {
   const settings = req.body;
 
   for (const key in settings) {
-    await Setting.upsert({ key, value: settings[key] });
+    if (key !== 'logo' && key !== 'heroImage') { // Exclude files from this loop
+      await Setting.upsert({ key, value: settings[key] });
+    }
   }
 
-  if (req.file) {
-    await Setting.upsert({ key: 'logo', value: req.file.path });
+  if (req.files) {
+    if (req.files.logo) {
+      await Setting.upsert({ key: 'logo', value: req.files.logo[0].path });
+    }
+    if (req.files.heroImage) {
+      await Setting.upsert({ key: 'heroImage', value: req.files.heroImage[0].path });
+    }
+    if (req.files.heroBackgroundImage) {
+      await Setting.upsert({ key: 'heroBackgroundImage', value: req.files.heroBackgroundImage[0].path });
+    }
   }
 
   res.status(200).json({ success: true, data: {} });

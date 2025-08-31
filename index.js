@@ -18,6 +18,7 @@ import errorHandler from "./middlewares/error.js";
 (async () => {
 	const conf = loadConfig();
 	dotenv.config();
+
 	const app = express();
 	app.use(cookieParser());
 
@@ -40,7 +41,7 @@ import errorHandler from "./middlewares/error.js";
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: true }));
 	app.use(tokenParsing);
-	// app.use(extendToken); // This is causing issues
+	app.use(extendToken);
 	// parse application/json
 	app.use(route);
 	// parse error messages
