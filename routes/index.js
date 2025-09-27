@@ -10,6 +10,7 @@ import checkoutRoutes from "./checkout.js";
 import settingRoutes from "./setting.js";
 import statsRoutes from "./stats.js";
 import contactRoutes from "./contact.js";
+import showcaseRoutes from "./showcase.js";
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use("/checkout", checkoutRoutes);
 router.use("/settings", settingRoutes);
 router.use("/stats", statsRoutes);
 router.use("/contacts", contactRoutes);
+router.use("/showcases", showcaseRoutes);
 
 export default router;
