@@ -1,10 +1,10 @@
 import asyncHandler from "../middlewares/async.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import { generatePaymentCode } from "../utils/codeGenerator.js";
+import { Op } from "sequelize";
 
 export const getOrders = asyncHandler(async (req, res, next) => {
 	const { Order, OrderContact, User, Product } = req.db.ecommerce.models;
-	const { Op } = require("sequelize");
 
 	// Get the current user's email and phone
 	const user = await User.findByPk(req.user.id);
@@ -125,7 +125,6 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const getAllOrdersAdmin = asyncHandler(async (req, res, next) => {
 	const { Order, OrderContact, User } = req.db.ecommerce.models;
-	const { Op } = require("sequelize");
 	const {
 		status,
 		sortBy = "createdAt",
@@ -319,7 +318,6 @@ export const getOrdersByContact = asyncHandler(async (req, res, next) => {
 	const { email } = req.query;
 
 	// Build search criteria - search by phone OR email
-	const { Op } = require("sequelize");
 	const whereConditions = [];
 
 	if (phone) {
@@ -370,7 +368,6 @@ export const lookupOrders = asyncHandler(async (req, res, next) => {
 		return next(new ErrorResponse("Утасны дугаар эсвэл имэйл оруулна уу", 400));
 	}
 
-	const { Op } = require("sequelize");
 	const whereConditions = [];
 
 	if (phone) {
