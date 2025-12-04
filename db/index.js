@@ -53,7 +53,7 @@ export async function DB() {
 					db[tenant].sequelize,
 					Sequelize.DataTypes,
 				);
-				await db[tenant].sequelize.sync({ alter: true });
+				await db[tenant].sequelize.sync();
 
 				db[tenant].models[model.name] = model;
 			}

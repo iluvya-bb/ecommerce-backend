@@ -26,11 +26,11 @@ export default (sequelize) => {
 			},
 			paymentType: {
 				type: DataTypes.STRING,
-				allowNull: true, // Can be null until paid
+				allowNull: true, // bank_transfer, qpay
 			},
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: "Pending", // Pending, Paid
+				defaultValue: "Pending", // Pending, Paid, Failed, Cancelled
 			},
 			paidDate: {
 				type: DataTypes.DATE,
@@ -40,11 +40,37 @@ export default (sequelize) => {
 				type: DataTypes.STRING,
 				unique: true,
 			},
+			// QPay specific fields
+			qpayInvoiceId: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				unique: true,
+			},
+			qrText: {
+				type: DataTypes.TEXT,
+				allowNull: true,
+			},
+			qrImage: {
+				type: DataTypes.TEXT,
+				allowNull: true,
+			},
+			qpayShortUrl: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			urls: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
+			paymentInfo: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
 		},
 		{
 			sequelize,
 			modelName: "PaymentRequest",
-			updatedAt: false, // No need for an updated at field
+			timestamps: true,
 		}
 	);
 	return PaymentRequest;

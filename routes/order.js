@@ -7,17 +7,21 @@ import {
 	updateOrderStatusAdmin,
 	getOrderAdmin,
 	getOrdersByContact,
+	lookupOrders,
+	trackOrder,
 } from "../controllers/order.js";
 import { protect, authorize } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// Public route for creating an order (guest checkout)
+// Public routes for guest checkout
 router.route("/").post(createOrder);
+router.route("/lookup").post(lookupOrders);
+router.route("/track/:id").get(trackOrder);
+router.route("/contact/:phone").get(getOrdersByContact);
 
 // User-specific routes (protected)
 router.route("/my-orders").get(protect, getOrders);
-router.route("/contact/:phone").get(getOrdersByContact);
 router.route("/:id").get(protect, getOrder);
 
 // Admin routes (protected and authorized)

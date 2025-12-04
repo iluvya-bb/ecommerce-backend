@@ -22,6 +22,11 @@ export default (sequelize, DataTypes) => {
         otherKey: "productId",
         as: "products",
       });
+      Order.belongsTo(models.PromoCode, {
+        foreignKey: 'promoCodeId',
+        as: 'promoCode',
+        allowNull: true,
+      });
     }
   }
   Order.init(
@@ -29,6 +34,26 @@ export default (sequelize, DataTypes) => {
       status: {
         type: DataTypes.STRING,
         defaultValue: "Awaiting Payment", // Awaiting payment, Shipped, Processing, Done
+      },
+      subtotal: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      saleDiscount: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0,
+      },
+      promoDiscount: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0,
+      },
+      promoCodeId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      promoCodeUsed: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       total: DataTypes.DECIMAL(10, 2),
       vat: DataTypes.DECIMAL(10, 2),

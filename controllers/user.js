@@ -2,11 +2,19 @@ import asyncHandler from "../middlewares/async.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import process from "node:process";
+import { sendPasswordResetEmail } from "../utils/sendMail.js";
 
 export const register = asyncHandler(async (req, res, next) => {
 	const { name, email, phone, password } = req.body;
 	const { User } = req.db.ecommerce.models;
+
+	// Check if user already exists
+	const existingUser = await User.findOne({ where: { email } });
+	if (existingUser) {
+		return next(new ErrorResponse("И-мэйл хаяг бүртгэлтэй байна", 400));
+	}
 
 	const user = await User.create({
 		name,
@@ -19,7 +27,11 @@ export const register = asyncHandler(async (req, res, next) => {
 		expiresIn: Number(process.env.JWT_EXPIRE),
 	});
 
-	res.status(200).json({ success: true, token });
+	res.status(200).json({
+		success: true,
+		token,
+		message: "Бүртгэл амжилттай.",
+	});
 });
 
 export const login = asyncHandler(async (req, res, next) => {
@@ -255,4 +267,89 @@ export const deleteUser = asyncHandler(async (req, res, next) => {
 	}
 	await user.destroy();
 	res.status(200).json({ success: true, data: {} });
+});
+
+// @desc    Forgot password - send reset email
+// @route   POST /api/v1/users/forgot-password
+// @access  Public
+export const forgotPassword = asyncHandler(async (req, res, next) => {
+	const { User } = req.db.ecommerce.models;
+	const { email } = req.body;
+
+	if (!email) {
+		return next(new ErrorResponse("И-мэйл хаяг оруулна уу", 400));
+	}
+
+	const user = await User.findOne({ where: { email } });
+
+	if (!user) {
+		return next(new ErrorResponse("Энэ и-мэйлтэй хэрэглэгч олдсонгүй", 404));
+	}
+
+	// Generate reset token
+	const resetToken = user.generatePasswordResetToken();
+	await user.save();
+
+	// Send password reset email
+	const baseUrl = req.headers.origin || process.env.FRONTEND_URL || "http://localhost:5173";
+	try {
+		await sendPasswordResetEmail(user, resetToken, baseUrl);
+	} catch (err) {
+		console.error("Failed to send password reset email:", err);
+		user.passwordResetToken = null;
+		user.passwordResetExpires = null;
+		await user.save();
+		return next(new ErrorResponse("И-мэйл илгээхэд алдаа гарлаа", 500));
+	}
+
+	res.status(200).json({
+		success: true,
+		message: "Нууц үг сэргээх и-мэйл илгээгдлээ",
+	});
+});
+
+// @desc    Reset password
+// @route   POST /api/v1/users/reset-password/:token
+// @access  Public
+export const resetPassword = asyncHandler(async (req, res, next) => {
+	const { User } = req.db.ecommerce.models;
+	const { token } = req.params;
+	const { password } = req.body;
+
+	if (!password) {
+		return next(new ErrorResponse("Шинэ нууц үг оруулна уу", 400));
+	}
+
+	if (password.length < 6) {
+		return next(new ErrorResponse("Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой", 400));
+	}
+
+	// Hash the token to compare with stored hash
+	const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+	const user = await User.findOne({
+		where: {
+			passwordResetToken: hashedToken,
+		},
+	});
+
+	if (!user) {
+		return next(new ErrorResponse("Буруу эсвэл хүчингүй токен", 400));
+	}
+
+	// Check if token has expired
+	if (user.passwordResetExpires < Date.now()) {
+		return next(new ErrorResponse("Токены хугацаа дууссан байна. Дахин хүсэлт илгээнэ үү.", 400));
+	}
+
+	// Set new password
+	user.password = password;
+	user.passwordResetToken = null;
+	user.passwordResetExpires = null;
+	await user.save();
+
+	res.status(200).json({
+		success: true,
+		message: "Нууц үг амжилттай шинэчлэгдлээ",
+	});
 });

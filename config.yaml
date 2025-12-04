@@ -21,3 +21,32 @@ cors:
   origins:
     - "http://localhost:5173"
     - "http://localhost:5174"
+
+qpay:
+  baseURL: https://merchant.qpay.mn  # Use https://merchant-sandbox.qpay.mn for sandbox
+  clientId: EDU_CLASS
+  clientSecret: RXqEVq8M
+  invoiceCode: EDU_CLASS_INVOICE
+  tokenRefreshInterval: 5  # Token refresh interval in minutes
+
+# AWS Configuration
+aws:
+  region: "ap-northeast-1"
+  accessKeyId: "AKIAZDZTCAMTYBFTW3GV"
+  secretAccessKey: "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"
+  sesFromEmail: "me@luvya.dev"
+
+# Email Configuration
+email:
+  sesRegion: "ap-northeast-1"
+  fromName: "EduShop"
+  fromEmail: "me@luvya.dev"
+  frontendUrl: "http://localhost:5173"
+
+# Google OAuth Configuration (credentials loaded from environment variables)
+google:
+  callbackURL: https://api.buteekhui.com/auth/google/callback
+
+# Frontend URL for OAuth redirects
+frontend:
+  url: "https://buteekhui.com"

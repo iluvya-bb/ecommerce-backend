@@ -11,6 +11,10 @@ import settingRoutes from "./setting.js";
 import statsRoutes from "./stats.js";
 import contactRoutes from "./contact.js";
 import showcaseRoutes from "./showcase.js";
+import qpayRoutes from "./qpay.js";
+import promocodeRoutes from "./promocode.js";
+import saleRoutes from "./sale.js";
+import authRoutes from "./auth.js";
 
 const router = express.Router();
 
@@ -26,5 +30,9 @@ router.use("/settings", settingRoutes);
 router.use("/stats", statsRoutes);
 router.use("/contacts", contactRoutes);
 router.use("/showcases", showcaseRoutes);
+router.use("/qpay", qpayRoutes);
+router.use("/promocodes", promocodeRoutes);
+router.use("/sales", saleRoutes);
+router.use("/auth", authRoutes);
 
 export default router;
